@@ -1,10 +1,16 @@
 OBJ_DIR := $(shell pwd)/obj_dir
-SIM_BIN := $(OBJ_DIR)/VHarness
 
 VSRCS := adapter.v harness.v
 CSRCS := sim.cpp
 
-VERILATOR_FLAGS := -cc --exe --trace -top Harness
+IW ?= 64
+OW ?= 32
+
+DUMPFILE := \"logs/dump-$(IW)-$(OW).vcd\"
+OUTPUT_FILE := VHarness-$(IW)-$(OW)
+SIM_BIN := $(OBJ_DIR)/$(OUTPUT_FILE)
+
+VERILATOR_FLAGS := -cc --exe --trace -top Harness -o $(OUTPUT_FILE) -DIWIDTH=$(IW) -DOWIDTH=$(OW) -DDUMPFILE=$(DUMPFILE)
 
 .PHONY: sim
 sim: $(SIM_BIN)

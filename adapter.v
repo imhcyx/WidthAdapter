@@ -13,7 +13,8 @@ module WidthAdapter
     output              iready,
     output [OW - 1 : 0] odata,
     output              ovalid,
-    input               oready
+    input               oready,
+    input               flush
 );
 
     generate
@@ -47,7 +48,7 @@ module WidthAdapter
             wire [BUFLEN-1:0] shift_in = ifire ? {odata, idata} : buffer;
 
             // available shift amoount for iptr and optr respectively
-            wire [CNTLEN-1:0] iavail = ifire ? IW : IW - iptr;
+            wire [CNTLEN-1:0] iavail = (ifire || flush) ? IW : IW - iptr;
             wire [CNTLEN-1:0] oavail = ofire ? OW : OW - optr;
 
             // the final shift amount
@@ -55,12 +56,12 @@ module WidthAdapter
 
             always @(posedge clk) begin
                 if (rst) iptr <= IW;
-                else iptr <= (ifire ? 0 : iptr) + sa;
+                else iptr <= (ifire || flush) ? sa : iptr + sa;
             end
 
             always @(posedge clk) begin
                 if (rst) optr <= 0;
-                else optr <= (ofire ? 0 : optr) + sa;
+                else optr <= ofire ? sa : optr + sa;
             end
 
             always @(posedge clk) buffer <= shift_in << sa;
